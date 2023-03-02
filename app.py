@@ -2,7 +2,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 
 app = Flask(__name__)
-app.secret_key = 'secretkey'  # Create a key for our actual implementation
+app.secret_key = 'secret'  # Create a key for our actual implementation
 
 # Configuring Flask-Login
 login_manager = LoginManager()
