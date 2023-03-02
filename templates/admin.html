@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Management Admin Portal</title>
+</head>
+<body>
+    <div class="container">
+        <h1>User Management Admin Portal</h1>
+        <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in users %}
+                <tr>
+                  <td>{{user.id}}</td>
+                  <td><input type="text" class="form-control" id="name" value="{{ users.get(1,1) }}" readonly ></td>
+                  <td>{{ user.email }}</td>
+                  <td><button id="modify-name-btn" class="btn btn-primary">Modify Name</button> <button>Reset Password</button> <button>Disable Account</button></td> 
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+
+    
+</body>
+
+<style type="text/css">
+.container {
+    width: 80%;
+    margin: 0 auto;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+button {
+    background-color: blue;
+    color: white;
+}
+
+</style>
+
+
+<script type="text/javascript">
+  $(function() {
+    $('#modify-name-btn').click(function() {
+      $('#name').val('New Name');
+    });
+  });
+</script>
+
+
+
+</html>
