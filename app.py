@@ -10,8 +10,8 @@ login_manager.init_app(app)
 
 # Define the user 
 class User(UserMixin):
-    def __init__(self, username, name, email, password, is_admin=False):
-        self.id = username
+    def __init__(self, id, name, email, password, is_admin=False):
+        self.id = id
         self.name = name
         self.email = email
         self.password = password
@@ -19,12 +19,12 @@ class User(UserMixin):
 
 # User credential dictionary this will be a database in the future
 userList = {
-    'admin': User('admin', 'admin', 'admin@ump.com', 'password', True),
-    'user': User('user', 'uusseerr', 'user@ump.com', 'password', False),
-    'tristam': User('tristam', 'Tristam S', 'tristam@ump.com', '123', True),
-    'john': User('john', 'John K', 'john@ump.com', 'password', True),
-    'connor': User('connor', 'Connor A', 'connor@ump.com', 'password', True),
-    'juan': User('juan', 'Juan M', 'juan@ump.com', 'password', True),
+    'admin': User(id='admin', name='admin lastname', email='admin@ump.com', password='password', is_admin=True),
+    'user': User(id='user', name='user lastname', email='user@ump.com', password='password', is_admin=False),
+    'tristam': User(id='tristam', name='Tristam S', email='tristam@ump.com', password='123', is_admin=True),
+    'john': User(id='john', name='John K', email='john@ump.com', password='password', is_admin=True),
+    'connor': User(id='connor', name='Connor A', email='connor@ump.com', password='password', is_admin=True),
+    'juan': User(id='juan', name='Juan M', email='juan@ump.com', password='password', is_admin=True),
 }
 
 # Define user loader
@@ -61,8 +61,8 @@ def home():
     
 @app.route('/admin')
 def admin():
-    users = userList
-    return render_template('admin.html', users=userList)
+    users = [user for user in userList.values()]
+    return render_template('admin.html', users=users)
 
 # Defines the logout view
 @app.route('/logout')
