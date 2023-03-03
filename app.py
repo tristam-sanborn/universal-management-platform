@@ -8,7 +8,7 @@ app.secret_key = 'secret'  # Create a key for our actual implementation
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-# Define the user model
+# Define the user 
 class User(UserMixin):
     def __init__(self, username, name, email, password, is_admin=False):
         self.id = username
@@ -17,10 +17,14 @@ class User(UserMixin):
         self.password = password
         self.is_admin = is_admin
 
-# User credentials
+# User credential dictionary this will be a database in the future
 userList = {
     'admin': User('admin', 'admin', 'admin@ump.com', 'password', True),
-    'user': User('user', 'admin', 'user@ump.com', 'password', False),
+    'user': User('user', 'uusseerr', 'user@ump.com', 'password', False),
+    'tristam': User('tristam', 'Tristam S', 'tristam@ump.com', '123', True),
+    'john': User('john', 'John K', 'john@ump.com', 'password', True),
+    'connor': User('connor', 'Connor A', 'connor@ump.com', 'password', True),
+    'juan': User('juan', 'Juan M', 'juan@ump.com', 'password', True),
 }
 
 # Define user loader
@@ -28,7 +32,7 @@ userList = {
 def load_user(user_id):
     return userList.get(user_id)
 
-# Define login view
+# Defines login view
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -43,7 +47,7 @@ def login():
         flash('Invalid username or password')
     return render_template('login.html')
 
-# Define the home view
+# Defines the home view
 @app.route('/')
 @login_required
 def home():
@@ -60,14 +64,21 @@ def admin():
     users = userList
     return render_template('admin.html', users=userList)
 
-    #return f'Welcome, {current_user.id}!'
-
-# Define the logout view
+# Defines the logout view
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
+# Defines the profile view
+@app.route('/profile')
+def profile():
+    if current_user.is_admin:
+        #Pass in the user who's profile it is here somehow
+        return render_template('profile.html', users=userList) 
+    else:
+        return redirect(url_for('home'))
 
 # Handle unauthorized access
 @login_manager.unauthorized_handler

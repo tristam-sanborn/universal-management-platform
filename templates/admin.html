@@ -1,5 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+    <style>
+        /* style the container for the buttons on the right of the screen */
+        .menu {
+          position: fixed;
+          top: 0;
+          right: 0;
+          width: 200px;
+          height: 100%;
+          background-color: #f1f1f1;
+          padding: 20px;
+        }
+        
+        /* Start making the buttons look nice */
+        .menu button {
+          display: block;
+          margin-bottom: 10px;
+          width: 100%;
+          padding: 10px;
+          background-color: #ddd;
+          border: none;
+          border-radius: 5px;
+          text-align: left;
+          font-size: 16px;
+          color: #333;
+          cursor: pointer;
+        }
+        
+        /* Makes the buttons look nice */
+        .menu button {
+            background-color: rgb(0, 183, 255);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        /* Even nicer when you hover over them */
+        .menu button:hover {
+          background-color: red;
+        }
+      </style>
 <head>
     <meta charset="UTF-8">
     <title>User Management Admin Portal</title>
@@ -10,26 +51,32 @@
         <table class="table">
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Username</th>
                 <th>Name</th>
                 <th>Email</th>
+                <th>Administrator</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {% for user in users %}
+              {% for username, name in users.items() %}
                 <tr>
-                  <td>{{user.id}}</td>
-                  <td><input type="text" class="form-control" id="name" value="{{ users.get(1,1) }}" readonly ></td>
-                  <td>{{ user.email }}</td>
-                  <td><button id="modify-name-btn" class="btn btn-primary">Modify Name</button> <button>Reset Password</button> <button>Disable Account</button></td> 
+                  <td>{{ username }}</td>
+                  <td><input type="text" class="form-control" id="name" value="{{ name }}" readonly ></td>
+                  <td>{{ email }}</td>
+                  <td>{{ is_admin }}</td>
+                  
+                    <td> <a href="profile" target="profile"> <button>Profile</button> </a>  </td>
                 </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
 
+        <div class="menu">
 
+            <a href="logout" target="logout"> <button>Logout</button> </a>
+          </div>
     
 </body>
 
