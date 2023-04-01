@@ -1,5 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
+from pydal import DAL
+
 
 app = Flask(__name__)
 app.secret_key = 'secret'  # Create a key for our actual implementation
@@ -7,6 +9,32 @@ app.secret_key = 'secret'  # Create a key for our actual implementation
 # Configuring Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
+import mysql.connector
+
+
+
+class sqlConnect():
+
+
+
+
+    def startConnection():
+        db = DAL("mysql://root:password@127.0.0.1:3306/ump_database")
+        query = db.executesql("SELECT * FROM employees")
+        print(query)
+#        cnx = mysql.connector.connect(user='root', password='password',
+#                              host='127.0.0.1',
+#                              database='ump_database')
+#        cursor = cnx.cursor()
+#        query = ("SELECT uid FROM employees")
+#        cursor.execute(query)
+#        for (uid) in cursor:
+#            print("uid list:", uid)
+#        print("failed if only output is this")
+    def endConnection():
+        print()
+        
+
 
 # Define the user 
 class User(UserMixin):
@@ -43,6 +71,9 @@ def login():
             if password == user.password:
                 login_user(user)
                 print (user)
+                username = user
+                userPassword = user.password
+                sqlConnect.startConnection()
                 return redirect(url_for('home'))
         flash('Invalid username or password')
     return render_template('login.html')
@@ -53,7 +84,7 @@ def login():
 def home():
     if current_user.is_authenticated:
         if current_user.is_admin:
-            return redirect(url_for('admin'))
+            return redirect(url_for('profile'))
         else:
             return render_template('user.html', user=current_user, users=userList)
     else:
@@ -69,6 +100,7 @@ def admin():
 @login_required
 def logout():
     logout_user()
+    sqlConnect.endConnection()    
     return redirect(url_for('login'))
 
 # Defines the profile view
