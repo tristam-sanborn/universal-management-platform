@@ -117,6 +117,7 @@ def admin():
 
 @app.route('/user')
 def user():
+    #REDIRECT TO USERS PROFILE PAGE
     return render_template('user.html')
 
 
@@ -138,7 +139,6 @@ def search_results():
     searchCursor.close()
     searchCnx.close()
 
-    # Use jsonify to convert the results to a json object that can be used by the HTML code
     return render_template('search_results.html', results=results)
 
 @app.route('/users')
@@ -243,9 +243,30 @@ def create_user():
 
     return render_template('create_user.html')
 
+@app.route('/delete', methods=['POST'])
+def delete_profile(user_id):
+    confirmation = request.form['confirmationList']
+    passwordRentry = request.form['passwordBox']
+    if confirmation == "confirm":
+        conn = getConnection()
+        cursor = conn.cursor()
+        authenticated = (cursor.exectute("SELECT * from employees WHERE username = %s and password = %s", session["username"], passwordRentry))
+        if authenticated:
+            username = cursor.exectute("SELECT username from employees WHERE uid = %s", user_id)
+            cursor.execute("DROP %S", username)
+
+        
+    else:
+        return redirect(url_for('admin', user_id=user_id))
+
+
+    return redirect(url_for('admin', user_id=user_id))
 
 
 
+def auditHistory(sqlcommand, modifiedUID, modifiedByUID):
+    #break down the sql input and add it to to corresponding UID's audit log file
+    return
 # Run the app on port 5000
 if __name__ == "__main__":
     app.run(port=5000)
