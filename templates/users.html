@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Users</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function redirectToCreateUser() {
+            window.location.href = "{{ url_for('create_user') }}";
+        }
+    </script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Users</h1>
+        <button onclick="redirectToCreateUser()" class="btn btn-primary mb-4">Create User</button>
+        <h1>Search Users</h1>
+        <form action="{{ url_for('search_results') }}" method="POST">
+            <input type="text" name="search_query" placeholder="Search" required>
+            <button type="submit">Search</button>
+        </form>
+        <ul class="list-group">
+            {% for user in users %}
+                <li class="list-group-item">
+                    <a href="{{ url_for('profile', user_id=user[0]) }}">{{ user[1] }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

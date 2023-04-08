@@ -1,122 +1,56 @@
 <!DOCTYPE html>
 <html>
-    <style>
-        /* style the container for the buttons on the right of the screen */
-        .menu {
-          position: fixed;
-          top: 0;
-          right: 0;
-          width: 200px;
-          height: 100%;
-          background-color: #f1f1f1;
-          padding: 20px;
-        }
-        
-        /* Start making the buttons look nice */
-        .menu button {
-          display: block;
-          margin-bottom: 10px;
-          width: 100%;
-          padding: 10px;
-          background-color: #ddd;
-          border: none;
-          border-radius: 5px;
-          text-align: left;
-          font-size: 16px;
-          color: #333;
-          cursor: pointer;
-        }
-        
-        /* Makes the buttons look nice */
-        .menu button {
-            background-color: rgb(0, 183, 255);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        /* Even nicer when you hover over them */
-        .menu button:hover {
-          background-color: blue;
-        }
-      </style>
-  <head>
-    <meta charset="UTF-8">
+<head>
     <title>User Profile</title>
-  </head>
-  <body>
-    <h1>User Profile</h1>
-    <img src="pfp.png" alt="I havent added a picture yet, pretend you see one here">
-    <h2>User Information</h2>
-    <p><strong>Name:</strong> User's Name </p>
-    <p><strong>Email:</strong> user@ump.com</p>
-    <p><strong>Location:</strong> Boston, MA</p>
-
-
-    <h2>User Management</h2>
-    <p><strong>Username:</strong> user</p>
-    <p><strong>Account Created:</strong> 03/02/2023</p>
-    <p><strong>Last Login:</strong> 03/02/2023</p>
-    <p><strong>Account Status:</strong> Active</p>
-    <p><strong>Password Expiration:</strong> 3/2/2024</p>
-
-
-    <h2>Audit History</h2>
-    <table class="audit">
-        <thead>
-          <tr>
-            <th>UserID</th>
-            <th>Modified By</th>
-            <th>Date of Change</th>
-            <th>Modifications</th>
-          </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>user</td>
-                <td>Tristam</td>
-                <td>03/02/2023 22:50</td>
-                <td>Password Reset</td> 
-            </tr>
-            <tr>
-              <td>user</td>
-              <td>Tristam</td>
-              <td>03/02/2023 22:45</td>
-              <td>Account Created</td> 
-            </tr>
-        </tbody>
-      </table>
-  </body>
-</html>
-
-<div class="menu">
-    <button>Reset Password</button>
-    <button>Lock Account</button>
-    <button>Modify User Details</button>
-    <button>Archive User</button>
-    <button>Delete User</button>
-  </div>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">User Profile</h1>
+        <form action="{{ url_for('update_profile', user_id=user[0]) }}" method="POST">
+            <div class="form-group">
+                <label>Username:</label>
+                <input type="text" name="username" value="{{ user[1] }}" readonly class="form-control">
+            </div>
+            <div class="form-group">
+                <label>First Name:</label>
+                <input type="text" name="firstname" value="{{ user[2] }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Last Name:</label>
+                <input type="text" name="lastname" value="{{ user[3] }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" name="email" value="{{ user[4] }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Phone:</label>
+                <input type="text" name="phone" value="{{ user[5] }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Address:</label>
+                <input type="text" name="address" value="{{ user[6] }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Role:</label>
+                <input type="text" name="role" value="{{ user[7] }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Manager:</label>
+                <input type="text" name="manager" value="{{ user[8] }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Company Name:</label>
+                <input type="text" name="company_name" value="{{ user[9] }}" class="form-control">
+            </div>
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
 </body>
-
-<style type="text/css">
-.container {
-    width: 80%;
-    margin: 0 auto;
-}
-
-table {
-    border-collapse: separate;
-}
-
-table, th, td {
-    border: 1px solid black;
-}
-
-button {
-    background-color: blue;
-    color: white;
-}
-
-</style>
 </html>

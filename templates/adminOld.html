@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+    <style>
+        /* style the container for the buttons on the right of the screen */
+        .menu {
+          position: fixed;
+          top: 0;
+          right: 0;
+          width: 200px;
+          height: 100%;
+          background-color: #f1f1f1;
+          padding: 20px;
+        }
+        
+        /* Start making the buttons look nice */
+        .menu button {
+          display: block;
+          margin-bottom: 10px;
+          width: 100%;
+          padding: 10px;
+          background-color: #ddd;
+          border: none;
+          border-radius: 5px;
+          text-align: left;
+          font-size: 16px;
+          color: #333;
+          cursor: pointer;
+        }
+        
+        /* Makes the buttons look nice */
+        .menu button {
+            background-color: rgb(0, 183, 255);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        /* Even nicer when you hover over them */
+        .menu button:hover {
+          background-color: red;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ccc;
+        }
+        th {
+            background-color: #d6d6d6;
+            color: #333;
+            font-weight: bol
+        }
+        tr:nth-child(even) {
+            background-color: #d6d6d6;
+        }
+        tr:hover {
+            background-color: #80d4f5;
+        }
+      </style>
+<head>
+    <meta charset="UTF-8">
+    <title>User Management Admin Portal</title>
+</head>
+<body>
+    <div class="container">
+        <h1>User Management Admin Portal</h1>
+        <table class="table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Administrator</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+            </tbody>
+          </table>
+        </div>
+
+        <div class="menu">
+
+            <a href="logout" target="logout"> <button>Logout</button> </a>
+          </div>
+    
+</body>
+
+<style type="text/css">
+.container {
+    width: 80%;
+    margin: 2 auto;
+}
+
+table {
+    border-collapse: separate;
+
+}
+
+table, th, td {
+    border: 2px solid black;
+}
+
+button {
+    background-color: blue;
+    color: white;
+}
+
+</style>
+
+</html>

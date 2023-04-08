@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+    <style>
+        /* style the container for the buttons on the right of the screen */
+        .menu {
+          position: fixed;
+          top: 0;
+          right: 0;
+          width: 200px;
+          height: 100%;
+          background-color: #f1f1f1;
+          padding: 20px;
+        }
+        
+        /* Start making the buttons look nice */
+        .menu button {
+          display: block;
+          margin-bottom: 10px;
+          width: 100%;
+          padding: 10px;
+          background-color: #ddd;
+          border: none;
+          border-radius: 5px;
+          text-align: left;
+          font-size: 16px;
+          color: #333;
+          cursor: pointer;
+        }
+        
+        /* Makes the buttons look nice */
+        .menu button {
+            background-color: rgb(0, 183, 255);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        /* Even nicer when you hover over them */
+        .menu button:hover {
+          background-color: blue;
+        }
+      </style>
+  <head>
+    <meta charset="UTF-8">
+    <title>User Profile</title>
+  </head>
+  <body>
+    <h1>User Profile</h1>
+    <img src="pfp.png" alt="I havent added a picture yet, pretend you see one here">
+    <h2>User Information</h2>
+    <p><strong>Name:</strong> User's Name </p>
+    <p><strong>Email:</strong> user@ump.com</p>
+    <p><strong>Location:</strong> Boston, MA</p>
+
+
+    <h2>User Management</h2>
+    <p><strong>Username:</strong> user</p>
+    <p><strong>Account Created:</strong> 03/02/2023</p>
+    <p><strong>Last Login:</strong> 03/02/2023</p>
+    <p><strong>Account Status:</strong> Active</p>
+    <p><strong>Password Expiration:</strong> 3/2/2024</p>
+
+
+    <h2>Audit History</h2>
+    <table class="audit">
+        <thead>
+          <tr>
+            <th>UserID</th>
+            <th>Modified By</th>
+            <th>Date of Change</th>
+            <th>Modifications</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>user</td>
+                <td>Tristam</td>
+                <td>03/02/2023 22:50</td>
+                <td>Password Reset</td> 
+            </tr>
+            <tr>
+              <td>user</td>
+              <td>Tristam</td>
+              <td>03/02/2023 22:45</td>
+              <td>Account Created</td> 
+            </tr>
+        </tbody>
+      </table>
+  </body>
+</html>
+
+<div class="menu">
+    <button>Reset Password</button>
+    <button>Lock Account</button>
+    <button>Modify User Details</button>
+    <button>Archive User</button>
+    <button>Delete User</button>
+  </div>
+</body>
+
+<style type="text/css">
+.container {
+    width: 80%;
+    margin: 0 auto;
+}
+
+table {
+    border-collapse: separate;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+button {
+    background-color: blue;
+    color: white;
+}
+
+</style>
+</html>
