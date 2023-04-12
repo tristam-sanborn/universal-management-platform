@@ -1,0 +1,4 @@
+Query: GRANT SELECT, INSERT, UPDATE, DELETE ON ump_database.* TO 'izzy'@'%'
+User ID: (1022,)
+Modifier ID: (1002,)
+Results:

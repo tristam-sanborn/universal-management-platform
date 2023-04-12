@@ -1,0 +1,4 @@
+Query: ('INSERT INTO employees (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', ('testauditlog2', '123', 0, 'testof', 'auditlog2', 'testaudit@ump.com', '543-654-7654', '12355 road rad', 'testuser', 'tristam', 'ump'))
+User ID: 1000
+Modifier ID: (1002,)
+Results: User created
