@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirm Delete User</title>
+</head>
+<body>
+    <h1>Confirmation Form</h1>
+    <form name="confirmationList" action="{{ url_for('delete_profile', user_id=user_id) }}" method="POST">
+        <label for="confirmationList">Confirm:</label>
+        <select name="confirmationList" id="confirmationList">
+            <option value="dont-confirm">Don't Confirm</option>
+            <option value="confirm">Confirm</option>
+        </select><br><br>
+        <label for="passwordBox">Password:</label>
+        <input type="password" id="passwordBox" name="passwordBox"><br><br>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>

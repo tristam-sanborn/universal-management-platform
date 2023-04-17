@@ -9,10 +9,11 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="text-center mb-4">User Profile</h1>
-        <form action="{{ url_for('render_delete_page', user_id=user[0]) }}" method="POST" class="d-inline">
-            <button type="submit" class="btn btn-danger">Delete user</button>
+        <h1 class="text-center mb-4">Asset Profile</h1>
+        <form action="{{ url_for('render_asset_delete_page', assetid=assetid) }}" method="GET" class="d-inline">
+            <button type="submit" class="btn btn-danger">Delete asset</button>
         </form>
+
         
         <form action="{{ url_for('update_profile', user_id=user[0]) }}" method="POST">
             <div class="form-group">

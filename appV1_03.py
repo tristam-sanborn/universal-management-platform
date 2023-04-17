@@ -1,6 +1,9 @@
 # Import flask and mySQL Connector
 from flask import Flask, request, session, redirect, render_template, url_for
 import mysql.connector
+import os
+import json
+from datetime import datetime
 
 # Create flask app object
 app = Flask(__name__)
@@ -110,7 +113,7 @@ def admin():
     userCursor = userConnection.cursor()
     userUID = session["uid"]
     
-    return render_template('admin.html', data=data)
+    return render_template('admin.html')
 
 
 
@@ -140,6 +143,23 @@ def search_results():
     searchCnx.close()
 
     return render_template('search_results.html', results=results)
+@app.route('/asset_search_results', methods=['POST'])
+def asset_search_results():
+    # Get the search term from the webpage form
+    asset_search_query = request.form['asset_search_query'] 
+
+    # Query the database with user's connection
+    searchCnx = getConnection()
+    searchCursor = searchCnx.cursor()
+    #need to fix lastname and company_name and add back
+    searchCursor.execute(f"SELECT assetid, assetOwner, assetName, location, assetCount FROM assetlist WHERE assetid LIKE %s OR assetOwner LIKE %s OR assetName LIKE %s OR location LIKE %s OR assetCount LIKE %s;", (f'%{search_query}%',)*5)
+    results = searchCursor.fetchall()
+
+    # Close the database connection
+    searchCursor.close()
+    searchCnx.close()
+
+    return render_template('asset_search_results.html', results=results)
 
 @app.route('/users')
 def users():
@@ -259,35 +279,57 @@ def create_user():
 
     return render_template('create_user.html')
 
-@app.route('/delete', methods=['POST'])
+@app.route('/delete/<int:user_id>', methods=['POST'])
 def delete_profile(user_id):
     confirmation = request.form['confirmationList']
     passwordRentry = request.form['passwordBox']
     if confirmation == "confirm":
         conn = getConnection()
         cursor = conn.cursor()
-        authenticated = (cursor.exectute("SELECT * from employees WHERE username = %s and password = %s", session["username"], passwordRentry))
+        cursor.execute("SELECT * from employees WHERE username = %s and password = %s", (session["username"], passwordRentry,))
+        authenticated = cursor.fetchone()
         if authenticated:
-            username = cursor.exectute("SELECT username from employees WHERE uid = %s", user_id)
-            cursor.execute("DROP %s", username)
-            cursor.execute("DELETE FROM `ump_database`.`employees` WHERE (`uid` = %s)", user_id)
+            cursor.execute("SELECT username from employees WHERE uid = %s", (user_id,))
+            username = cursor.fetchone()[0]
+            uid = get_user_by_id(user_id)
+            try:
+                cursor.execute("DELETE FROM employees WHERE uid = %s", (user_id,))
+                cursor.execute("DROP USER %s", (username,))
+            except Exception as e:
+                print(f"An error occurred while deleting user {username} with ID {user_id}: {e}")
+
 
         
     else:
         return redirect(url_for('/'))
 
 
-    return redirect(url_for('admin', user_id=user_id))
+    return redirect(url_for('users', user_id=user_id))
+@app.route('/delete_profile/<int:user_id>', methods=['GET', 'POST'])
+def render_delete_page(user_id):
+    if request.method == 'POST':
+        return render_template('delete.html', user_id=user_id)
+    else:
+        return redirect(url_for('profile'))
+    
+def get_user_by_id(user_id):
+    conn = getConnection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM employees WHERE uid = %s", (user_id,)) # Add a comma to make it a tuple
+    user = cursor.fetchone()
+    cursor.close()
+    return user
 
 def audit_log_query(query, user_id, modifier_id, userFullName, accountCreation):
     # Connect to the MySQL database
+    uidNotTuple = user_id[0]
     if accountCreation == True:
-        filename = f"{user_id} {userFullName}.txt"
+        filename = f"{uidNotTuple} {userFullName}.txt"
         with open(filename, 'a') as f:
             f.write(f"Query: {query}\n")
-            f.write(f"User ID: {user_id}\n")
+            f.write(f"User ID: {uidNotTuple}\n")
             f.write(f"Modifier ID: {modifier_id}\n")
-            f.write("Results: User created\n")
+            f.write("Results: User created\n\n")
         f.close()
     else:
         conn = getConnection()
@@ -296,20 +338,20 @@ def audit_log_query(query, user_id, modifier_id, userFullName, accountCreation):
         # Execute the query and fetch the results
         cursor.execute(query)
         results = cursor.fetchall()
-        conn.commit
+        conn.commit()
 
         # Write the results to a file with the user ID as the filename
-        filename = f"{user_id} {userFullName}.txt"
+        filename = f"{uidNotTuple} {userFullName}.txt"
         with open(filename, 'a') as f:
             f.write(f"Query: {query}\n")
-            f.write(f"User ID: {user_id}\n")
+            f.write(f"User ID: {uidNotTuple}\n")
             f.write(f"Modifier ID: {modifier_id}\n")
             f.write("Results:\n")
             for result in results:
                 f.write(str(result) + "\n")
+            f.write("\n")
 
     # Close the database connection
-        f.close()
         cursor.close()
         conn.close()
 
@@ -342,10 +384,96 @@ def create_asset():
 
         conn.close()
 
-        return redirect(url_for('users'))
+        return redirect(url_for('assets'))
 
-    return render_template('create_user.html')
+    return render_template('create_asset.html')
 
+@app.route('/assetprofile/<int:asset_id>')
+def assetProfile(asset_id):
+    conn = getConnection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT assetName, assetCount, location, assetOwner FROM assetlist WHERE assetid=%s", (asset_id,))
+    asset = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if asset is None:
+        return "Asset not found", 404
+
+    return render_template('assetprofile.html', asset_id=asset_id)
+
+@app.route('/assetprofile/<int:asset_id>/update', methods=['POST'])
+def update_asset(asset_id):
+    assetName = request.form['asset_name']
+    assetCount = request.form['amount_of_asset']
+    location = request.form['location']
+    assetOwner = request.form['owner_of_asset']
+
+    conn = getConnection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE employees SET
+            assetName=%s, assetCount=%s, location=%s, assetOwner=%s
+        WHERE asset_id=%s
+    """, (assetName, assetCount, location, assetOwner))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for('assetprofile', asset_id=asset_id))
+
+@app.route('/deleteasset', methods=['POST'])
+def delete_asset(assetid):
+    confirmation = request.form['confirmationList']
+    passwordRentry = request.form['passwordBox']
+    if confirmation == "confirm":
+        conn = getConnection()
+        cursor = conn.cursor()
+        cursor.exectute("SELECT * from employees WHERE username = %s and password = %s", session["username"], passwordRentry)
+        authenticated = cursor.fetchone()
+        if authenticated:
+            username = cursor.exectute("SELECT username from employees WHERE uid = %s", assetid)
+            cursor.execute("DROP %s", username)
+            cursor.execute("DELETE FROM `ump_database`.`employees` WHERE (`uid` = %s)", assetid)
+
+        
+    else:
+        return redirect(url_for('/'))
+
+
+
+
+
+CALENDAR_FILE = 'calendar.json'
+
+def load_calendar():
+    if os.path.exists(CALENDAR_FILE):
+        with open(CALENDAR_FILE, 'r') as f:
+            return json.load(f)
+    return {}
+
+def save_calendar(calendar_data):
+    with open(CALENDAR_FILE, 'w') as f:
+        json.dump(calendar_data, f)
+@app.route('/addevent', methods=['POST'])   
+def add_event(date, event):
+    calendar_data = load_calendar()
+    if date not in calendar_data:
+        calendar_data[date] = []
+    calendar_data[date].append(event)
+    save_calendar(calendar_data)
+
+@app.route('/calendar', methods=['GET', 'POST'])
+def calendar_page():
+    if request.method == 'POST':
+        date = request.form.get('date')
+        event = request.form.get('event')
+        add_event(date, event)
+        return redirect(url_for('calendar_page'))
+
+    calendar_data = load_calendar()
+    return render_template('calendar.html', calendar=calendar_data)
 
 
 # Run the app on port 5000

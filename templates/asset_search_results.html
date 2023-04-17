@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Search Results</title>
+    <title>Asset Search Results</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
@@ -23,17 +23,17 @@
     
     </style>
     <script>
-        function redirectToProfile(user_id) {
-            window.location.href = "/profile/" + user_id;
+        function redirectToAssetProfile(assetid) {
+            window.location.href = "/assetprofile/" + assetid;
         }
     </script>
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Search Results</h1>
-        <form action="{{ url_for('search_results') }}" method="POST" class="mb-4">
+        <h1 class="text-center mb-4">Asset Search Results</h1>
+        <form action="{{ url_for('asset_search_results') }}" method="POST" class="mb-4">
             <div class="input-group">
-                <input type="text" name="search_query" class="form-control" placeholder="Search for users" required>
+                <input type="text" name="asset_search_query" class="form-control" placeholder="Search for assets" required>
                 <div class="input-group-append">
                     <button type="submit" class="btn btn-primary">Search</button>
                 </div>
@@ -43,27 +43,21 @@
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
-                    <th>UID</th>
-                    <th>Username</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Manager</th>
-                    <th>Company Name</th>
+                    <th>assetid</th>
+                    <th>assetOwner</th>
+                    <th>assetName</th>
+                    <th>location</th>
+                    <th>assetCount</th>
                 </tr>
             </thead>
             <tbody>
                 {% for result in results %}
-                    <tr class="clickable-row" onclick="redirectToProfile('{{ result[0] }}')">
+                    <tr class="clickable-row" onclick="redirectToAssetProfile('{{ result[0] }}')">
                         <td>{{ result[0] }}</td>
                         <td>{{ result[1] }}</td>
                         <td>{{ result[2] }}</td>
                         <td>{{ result[3] }}</td>
                         <td>{{ result[4] }}</td>
-                        <td>{{ result[5] }}</td>
-                        <td>{{ result[6] }}</td>
-                        <td>{{ result[7] }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

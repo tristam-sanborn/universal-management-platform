@@ -199,7 +199,6 @@ def update_profile(user_id):
 @app.route('/create_user', methods=['GET', 'POST'])
 def create_user():
     if request.method == 'POST':
-
         username = request.form['username']
         password = request.form['password']
         firstname = request.form['firstname']
@@ -216,27 +215,44 @@ def create_user():
         cursor = conn.cursor()
         if permissionLevel == "admin":
             permission = 0
+
             cursor.execute("""
             INSERT INTO employees (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name))
+            conn.commit()
+            cursor.execute("SELECT uid FROM employees WHERE username = %s and password = %s and firstname = %s and lastname = %s ", (username, password, firstname, lastname))
+            newUserUID = cursor.fetchone()
+            userFullName = firstname + lastname
+            audit_log_query(("INSERT INTO employees (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name)), newUserUID, session["uid"], userFullName, True)
+
+
         # Insert the new user into the employees table
-            cursor.execute(f"CREATE USER '{username}'@'%' IDENTIFIED BY '{password}'")
-            cursor.execute(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ump_database.* TO '{username}'@'%'")
-        
-        
+            audit_log_query(f"CREATE USER '{username}'@'%' IDENTIFIED BY '{password}'", newUserUID, session["uid"], userFullName, False)
+            #cursor.execute(f"CREATE USER '{username}'@'%' IDENTIFIED BY '{password}'")
+            audit_log_query(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ump_database.* TO '{username}'@'%'", newUserUID, session["uid"], userFullName, False)
+            #cursor.execute(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ump_database.* TO '{username}'@'%'")
+                    
         if permissionLevel == "regular_user":
             permission = 1
             cursor.execute("""
             INSERT INTO employees (username, password, firstname, lastname, email, phone, address, role, manager, company_name)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name))
-            cursor.execute(f"CREATE USER '{username}'@'%' IDENTIFIED BY '{password}'")
-            cursor.execute(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ump_database.* TO '{username}'@'%'")
+            conn.commit()
+            userFullName = firstname + lastname
+            cursor.execute("SELECT uid FROM employees WHERE username = %s and password = %s and firstname = %s and lastname = %s ", (username, password, firstname, lastname))
+            newUserUID = cursor.fetchone()
+            conn.commit()
+            audit_log_query(("INSERT INTO employees (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name)), newUserUID, session["uid"], userFullName, True)
+            audit_log_query(f"CREATE USER '{username}'@'%' IDENTIFIED BY '{password}'", newUserUID, session["uid"], userFullName,False)
+            #cursor.execute(f"CREATE USER '{username}'@'%' IDENTIFIED BY '{password}'")
+            audit_log_query(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ump_database.* TO '{username}'@'%'", newUserUID, session["uid"], userFullName)
+            #cursor.execute(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ump_database.* TO '{username}'@'%'")
+
         
 
-        conn.commit()
-        cursor.close()
+
         conn.close()
 
         return redirect(url_for('users'))
@@ -262,11 +278,44 @@ def delete_profile(user_id):
 
     return redirect(url_for('admin', user_id=user_id))
 
+def audit_log_query(query, user_id, modifier_id, userFullName, accountCreation):
+    # Connect to the MySQL database
+    if accountCreation == True:
+        filename = f"{user_id} {userFullName}.txt"
+        with open(filename, 'a') as f:
+            f.write(f"Query: {query}\n")
+            f.write(f"User ID: {user_id}\n")
+            f.write(f"Modifier ID: {modifier_id}\n")
+            f.write("Results: User created\n")
+        f.close()
+    else:
+        conn = getConnection()
+        cursor = conn.cursor()
+
+        # Execute the query and fetch the results
+        cursor.execute(query)
+        results = cursor.fetchall()
+        conn.commit
+
+        # Write the results to a file with the user ID as the filename
+        filename = f"{user_id} {userFullName}.txt"
+        with open(filename, 'a') as f:
+            f.write(f"Query: {query}\n")
+            f.write(f"User ID: {user_id}\n")
+            f.write(f"Modifier ID: {modifier_id}\n")
+            f.write("Results:\n")
+            for result in results:
+                f.write(str(result) + "\n")
+
+    # Close the database connection
+        f.close()
+        cursor.close()
+        conn.close()
+    
 
 
-def auditHistory(sqlcommand, modifiedUID, modifiedByUID):
-    #break down the sql input and add it to to corresponding UID's audit log file
-    return
+
+
 # Run the app on port 5000
 if __name__ == "__main__":
     app.run(port=5000)
