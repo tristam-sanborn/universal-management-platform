@@ -2,10 +2,173 @@
 <html>
 <head>
     <title>Users</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .content {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+        }
+        .calendar-container {
+            width: 350px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            padding: 2rem;
+        }
+        .navbar {
+            background-color: #fff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .navbar img {
+            height: 98px;
+            width: 500px;
+        }
+        .navbar form {
+            display: flex;
+            align-items: center;
+        }
+        .navbar form:not(:first-child) {
+            margin-left: 1rem;
+        }
+        .navbar input[type="text"] {
+            margin-right: 0.5rem;
+        }
+        .navbar input[type="submit"],
+        .logout-section input[type="submit"] {
+            margin: 0;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        input[type="text"] {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        button,
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        button:hover,
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        ul {
+            padding-left: 0;
+            list-style-type: none;
+        }
+        li {
+            background-color: #f5f5f5;
+            padding: 0.5rem;
+            border-radius: 3px;
+            margin-bottom: 0.5rem;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.9.0/main.global.min.js" integrity="sha512-MXIJrG7JHlW8zVcetPZx3uH7THLWWnYzR7gJQXe1Mv1Jz+u95cJp33xquq3J6vcyH0G8OrRJ0X2gXr6U+Q2O8w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.9.0/main.min.css" integrity="sha512-L0DWYz6R89HF6c2U6jXu6beP4AVq3q24j1x0nzkDj8c8r3q3ZRN5e5UpSZ9RnWgDv1CwQ5iJ/Uxsw2QWwiD+gQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.9.0/main.min.js" integrity="sha512-5jnp98z0X9NscGj5+5VWJ5t1v7Q+bytz4zI7Qy0BBtJH7VNHp4+ddxIAb1q3q4xzOJj42Mg1M2QWKh8yvS9YDw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+    
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: '/events.json'
+            });
+    
+            calendar.render();
+        });
+
+        $(document).ready(function() {
+            // Load events from JSON file
+            function fetchEvents() {
+                return $.getJSON('/events.json');
+            }
+            
+            // Save events to JSON file
+            function saveEvents(events) {
+                return $.ajax({
+                    url: '/save_events',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(events)
+                });
+            }
+            
+            // Handle event submission
+            $('#event-submit').on('click', function() {
+                var title = $('#event-title').val();
+                var date = $('#event-date').val();
+                var time = $('#event-time').val();
+                
+                if (!title || !date || !time) {
+                    alert('Please fill all fields');
+                    return;
+                }
+                
+                var start = moment(date + 'T' + time);
+                var event = {
+                    title: title,
+                    start: start.format()
+                };
+                
+                calendar.addEvent(event);
+                
+                fetchEvents().then(function(events) {
+                    events.push(event);
+                    return saveEvents(events);
+                }).then(function() {
+                    $('#event-title').val('');
+                    $('#event-date').val('');
+                    $('#event-time').val('');
+                }).catch(function() {
+                    alert('Error saving event');
+                });
+            });
+        });
+    </script>
     <script>
         function redirectToCreateUser() {
             window.location.href = "{{ url_for('create_user') }}";
@@ -13,25 +176,42 @@
     </script>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center mb-4">Users</h1>
-        <button onclick="redirectToCreateUser()" class="btn btn-primary mb-4">Create User</button>
-        <h1>Search Users</h1>
+    <div class="navbar">
+        <img src="{{ url_for('static', filename='images/umplong.jpg') }}" alt="UMP Logo">
         <form action="{{ url_for('search_results') }}" method="POST">
             <input type="text" name="search_query" placeholder="Search" required>
-            <button type="submit">Search</button>
+            <input type="submit" value="Search">
         </form>
         <form action="{{ url_for('asset_search_results') }}" method="POST">
             <input type="text" name="asset_search_query" placeholder="Search for assets" required>
-            <button type="submit">Search</button>
+            <input type="submit" value="Search">
         </form>
-        <ul class="list-group">
-            {% for user in users %}
-                <li class="list-group-item">
-                    <a href="{{ url_for('profile', user_id=user[0]) }}">{{ user[1] }}</a>
-                </li>
-            {% endfor %}
-        </ul>
+        <form class="logout-section" action="{{ url_for('logout') }}" method="POST">
+            <input type="submit" value="Logout">
+        </form>
+    </div>
+    <div class="content">
+        <div class="container" style="margin-top: 130px;">
+            <h1>Users</h1>
+            <button onclick="redirectToCreateUser()">Create User</button>
+            <ul>
+                {% for user in users %}
+                    <li>
+                        <a href="{{ url_for('profile', user_id=user[0]) }}">{{ user[1] }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="calendar-container">
+            <div id="calendar"></div>
+            <div>
+                <input type="text" id="event-title" placeholder="Event Title">
+                <input type="date" id="event-date">
+                <input type="time" id="event-time">
+                <button id="event-submit">Add Event</button>
+            </div>
+        </div>
     </div>
 </body>
 </html>
+

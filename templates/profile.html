@@ -6,14 +6,41 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+        }
+
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
         <h1 class="text-center mb-4">User Profile</h1>
-        <form action="{{ url_for('render_delete_page', user_id=user[0]) }}" method="POST" class="d-inline">
-            <button type="submit" class="btn btn-danger">Delete user</button>
+        {% set profile_picture_path = 'profile_pictures/' + user[0]|string + 'profilepicture.jpg' %}
+        {% if profile_picture_exists %}
+            <img src="{{ url_for('static', filename=profile_picture_path) }}" alt="Profile Picture" class="profile-picture d-block mx-auto">
+        {% else %}
+            <img src="{{ url_for('static', filename='defaultpfp.png') }}" alt="Profile Picture" class="profile-picture d-block mx-auto">
+        {% endif %}
+        <form action="{{ url_for('upload_picture', user_id=user[0]) }}" method="POST" enctype="multipart/form-data">
+            <div class="form-group text-center">
+                <input type="file" name="profile_picture" accept="image/*" required>
+                <button type="submit" class="btn btn-info mt-2">Upload</button>
+            </div>
         </form>
-        
+
+
         <form action="{{ url_for('update_profile', user_id=user[0]) }}" method="POST">
             <div class="form-group">
                 <label>Username:</label>

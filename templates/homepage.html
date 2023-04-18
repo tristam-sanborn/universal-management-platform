@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UMP Homepage</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+  #header {
+    text-align: center;
+  }
+  #main-content {
+    text-align: center;
+    margin: 50px auto;
+  }
+  footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+  }
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 40%;
+  }
+</style>
+<script>
+  function redirectToCompanyPage() {
+    const selectedOption = document.getElementById('company-select').value;
+    if (selectedOption !== 'default') {
+      window.location.href = '/' + selectedOption;
+    }
+  }
+  function showContactInfo() {
+    document.getElementById('contact-modal').style.display = 'block';
+  }
+  function closeContactInfo() {
+    document.getElementById('contact-modal').style.display = 'none';
+  }
+</script>
+</head>
+<body>
+  <div id="header">
+    <img src="/static/images/umpglobe.png" alt="UMP logo">
+  </div>
+  <div id="main-content">
+    <label for="company-select">Select Company:</label>
+    <select id="company-select">
+      <option value="default">--Please choose an option--</option>
+      <option value="ump">ump</option>
+      <option value="company2">Company 2</option>
+      <option value="company3">Company 3</option>
+    </select>
+    <br>
+    <button onclick="redirectToCompanyPage()">Submit</button>
+  </div>
+  <footer>
+    <a href="about-us.html">About Us</a>
+    <button onclick="showContactInfo()">Contact Information</button>
+  </footer>
+  <div id="contact-modal" class="modal">
+    <div class="modal-content">
+      <span onclick="closeContactInfo()" style="cursor:pointer;float:right;">&times;</span>
+      <p>Contact UMP Customer Support</p>
+      <p>Phone: (123) 456-7890</p>
+      <p>Email: support@ump.com</p>
+    </div>
+</div>
+</div>
+</body>
+</html>
