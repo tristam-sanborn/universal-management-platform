@@ -97,10 +97,10 @@ INSERT INTO `ump_database`.`employees` (`uid`, `username`, `password`, `permissi
 In the IDE that you have brought the code into, go into the terminal and run the command 'python appV1_04.py' and click the ip adress that is says "Running on".
 This will bring you to our login webpage where you can start using UMP.
 
-If you get errors, there are some dependencies you may have to run in the terminal. These are listed below.\n
- pip install flask\n
- pip install mysql.connector\n
- pip install os\n
- pip install json\n
- pip install datetime\n
- pip install werkzeug.utils\n
+If you get errors, there are some dependencies you may have to run in the terminal. These are listed below. 
+pip install flask 
+pip install mysql.connector 
+pip install os 
+pip install json 
+pip install datetime 
+pip install werkzeug.utils
