@@ -98,4 +98,4 @@ In the IDE that you have brought the code into, go into the terminal and run the
 This will bring you to our login webpage where you can start using UMP.
 
 If you get errors, there are some dependencies you may have to run in the terminal. These are listed below. 
-pip install flask, pip install mysql.connector, pip install os, pip install json, pip install datetime, pip install werkzeug.utils
+pip install flask, pip install mysql.connector, pip install os, pip install json, pip install datetime, pip install werkzeug.utils.
