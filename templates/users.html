@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Users</title>
+    <!-- This is currently the admin portal-->
     <style>
         .content {
             display: flex;
@@ -99,9 +100,10 @@
             text-decoration: underline;
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.9.0/main.global.min.js" integrity="sha512-MXIJrG7JHlW8zVcetPZx3uH7THLWWnYzR7gJQXe1Mv1Jz+u95cJp33xquq3J6vcyH0G8OrRJ0X2gXr6U+Q2O8w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.9.0/main.min.css" integrity="sha512-L0DWYz6R89HF6c2U6jXu6beP4AVq3q24j1x0nzkDj8c8r3q3ZRN5e5UpSZ9RnWgDv1CwQ5iJ/Uxsw2QWwiD+gQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.9.0/main.min.js" integrity="sha512-5jnp98z0X9NscGj5+5VWJ5t1v7Q+bytz4zI7Qy0BBtJH7VNHp4+ddxIAb1q3q4xzOJj42Mg1M2QWKh8yvS9YDw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- This is what the tutorial I was following said to use for the calendar, it looks like these links are no longer valid which is probably what is breaking the calendar -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.4/locales-all.min.js" integrity="sha512-MXIJrG7JHlW8zVcetPZx3uH7THLWWnYzR7gJQXe1Mv1Jz+u95cJp33xquq3J6vcyH0G8OrRJ0X2gXr6U+Q2O8w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.4/main.min.css" integrity="sha512-L0DWYz6R89HF6c2U6jXu6beP4AVq3q24j1x0nzkDj8c8r3q3ZRN5e5UpSZ9RnWgDv1CwQ5iJ/Uxsw2QWwiD+gQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.4/main.min.js" integrity="sha512-5jnp98z0X9NscGj5+5VWJ5t1v7Q+bytz4zI7Qy0BBtJH7VNHp4+ddxIAb1q3q4xzOJj42Mg1M2QWKh8yvS9YDw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script>
@@ -137,7 +139,7 @@
                 });
             }
             
-            // Handle event submission
+            // Take in event submission
             $('#event-submit').on('click', function() {
                 var title = $('#event-title').val();
                 var date = $('#event-date').val();
@@ -214,4 +216,3 @@
     </div>
 </body>
 </html>
-

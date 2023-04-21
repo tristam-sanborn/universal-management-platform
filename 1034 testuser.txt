@@ -1,0 +1,15 @@
+Query: ('INSERT INTO employees (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', ('testlive', '123', 1, 'test', 'user', '43@UMP.COM', '5432', '423', '123', '123', '12412'))
+User ID: 1034
+Modifier ID: (1002,)
+Results: User created
+
+Query: CREATE USER 'testlive'@'%' IDENTIFIED BY '123'
+User ID: 1034
+Modifier ID: (1002,)
+Results:
+
+Query: GRANT SELECT, INSERT, UPDATE, DELETE ON ump_database.* TO 'testlive'@'%'
+User ID: 1034
+Modifier ID: (1002,)
+Results:
+

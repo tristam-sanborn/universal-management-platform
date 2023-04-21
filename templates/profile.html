@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>User Profile</title>
+    <!-- Web design tutorials I was learning from recommended using these -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
@@ -14,6 +15,7 @@
         .container {
             max-width: 600px;
         }
+        
 
         .profile-picture {
             width: 150px;
@@ -22,11 +24,57 @@
             object-fit: cover;
             margin-bottom: 20px;
         }
+        .navbar {
+            background-color: #fff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .navbar img {
+            height: 126px;
+            width: 625px;
+        }
+        .navbar form {
+            display: flex;
+            align-items: center;
+        }
+        .navbar form:not(:first-child) {
+            margin-left: 1rem;
+        }
+        .navbar input[type="text"] {
+            margin-right: 0.5rem;
+        }
+        .navbar input[type="submit"],
+        .logout-section input[type="submit"] {
+            margin: 0;
+        }
+        
     </style>
 </head>
 <body>
+    <body>
+        <div class="navbar">
+            <img src="{{ url_for('static', filename='images/umplong.jpg') }}" alt="UMP Logo">
+            <form action="{{ url_for('search_results') }}" method="POST">
+                <input type="text" name="search_query" placeholder="Search" required>
+                <input type="submit" value="Search">
+            </form>
+
+            <form class="logout-section" action="{{ url_for('logout') }}" method="POST">
+                <input type="submit" value="Logout">
+            </form>
+        </div>
     <div class="container mt-5">
         <h1 class="text-center mb-4">User Profile</h1>
+        <form action="{{ url_for('render_delete_page', user_id=user[0]) }}" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-danger">Delete user</button>
+        </form>
         {% set profile_picture_path = 'profile_pictures/' + user[0]|string + 'profilepicture.jpg' %}
         {% if profile_picture_exists %}
             <img src="{{ url_for('static', filename=profile_picture_path) }}" alt="Profile Picture" class="profile-picture d-block mx-auto">

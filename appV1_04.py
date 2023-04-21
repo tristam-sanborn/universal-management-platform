@@ -1,10 +1,9 @@
-# Import flask and mySQL Connector
+# Import flask, mySqlconnector, os, json, datetime, werkzeug.utils
 from flask import Flask, request, session, redirect, render_template, url_for, flash, jsonify, send_from_directory
 import mysql.connector
 import os
 import json
 from datetime import datetime
-import os
 from werkzeug.utils import secure_filename
 
 # Create flask app object
@@ -47,11 +46,9 @@ def home():
             return redirect("/users")
         else:
             return redirect("/user")
-
-    
     else:
         # Redirect to the login page
-        return redirect("/login")
+        return redirect("/homepage")
 
 # Define a route for the login page
 @app.route("/login", methods=["GET", "POST"])
@@ -91,7 +88,7 @@ def login():
             # Return an error message
             return "Invalid username or password"
     else:
-        # Return the login template
+        # Return the login page template
         return render_template("login.html")
     
 
@@ -99,11 +96,11 @@ def login():
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.clear()
-    return redirect(url_for('login'))
+    return redirect(url_for('homepage'))
 
 
 
-
+#admin has been replaced by users for now, in complete implementation "users" would be moved back to admin
 @app.route('/admin')
 def admin():
     userConnection = getConnection()
@@ -114,29 +111,35 @@ def admin():
 
 
 
-
+#this page no longer really does anything, just redirects to profile page 
 @app.route('/user')
 def user():
     #REDIRECT TO USERS PROFILE PAGE
-    return render_template('user.html')
+    user_id = session["uid"]
+    uid = user_id[0]
+    return redirect(url_for('profile', user_id=uid))
 
-
+#front page for website, doesn't have to do anything just load the template
 @app.route('/homepage')
 def homepage():
     return render_template('homepage.html')
+
+#Where you get re-directed to after clicking on UMP in the company list
 @app.route('/ump')
 def ump():
     return render_template('login.html')
 
+#this is the page that displays search results, would make more sense to rename to search because it also does the search operation
+# originally had a search page where the search was done which is the reason for the name.
 @app.route('/search_results', methods=['POST'])
 def search_results():
-    # Get the search term from the webpage form
+    # Get the search term from the webpage form called search_query
     search_query = request.form['search_query'] 
 
-    # Query the database with user's connection
+    # Query the database with user's credentials which means it can only show what they can access
     searchCnx = getConnection()
     searchCursor = searchCnx.cursor()
-    #need to fix lastname and company_name and add back
+    #searches by all parameters, possible point to build on could allow users to select what they want to search by
     searchCursor.execute(f"SELECT uid, username, firstname, lastname, email, role, manager, company_name FROM employees WHERE username LIKE %s OR firstname LIKE %s OR lastname LIKE %s OR email LIKE %s OR role LIKE %s OR manager LIKE %s OR company_name LIKE %s;", (f'%{search_query}%',)*7)
     results = searchCursor.fetchall()
 
@@ -145,15 +148,18 @@ def search_results():
     searchCnx.close()
 
     return render_template('search_results.html', results=results)
+
+
+#This is a duplicate of the search function for users just checks a different table, might be good to add asset search to user search and just have one search box
 @app.route('/asset_search_results', methods=['POST'])
 def asset_search_results():
     # Get the search term from the webpage form
     asset_search_query = request.form['asset_search_query'] 
 
-    # Query the database with user's connection
+    # Query the database with user's credentials which means it can only show what they can access
     searchCnx = getConnection()
     searchCursor = searchCnx.cursor()
-    #need to fix lastname and company_name and add back
+    #searches assetlist table for asset parameters
     searchCursor.execute(f"SELECT assetid, assetOwner, assetName, location, assetCount FROM assetlist WHERE assetid LIKE %s OR assetOwner LIKE %s OR assetName LIKE %s OR location LIKE %s OR assetCount LIKE %s;", (f'%{asset_search_query}%',)*5)
     results = searchCursor.fetchall()
 
@@ -163,11 +169,12 @@ def asset_search_results():
 
     return render_template('asset_search_results.html', results=results)
 
+#This is the current admin portal homepage
 @app.route('/users')
 def users():
     conn = getConnection()
     cursor = conn.cursor()
-
+    #query database to get data to put into the employee list on homepage
     cursor.execute("SELECT uid, username FROM employees")
     users = cursor.fetchall()
     cursor.close()
@@ -176,26 +183,31 @@ def users():
     return render_template('users.html', users=users)
 
 
-
+#page for a users profile page
 @app.route('/profile/<int:user_id>')
 def profile(user_id):
     conn = getConnection()
     cursor = conn.cursor()
-
+    #pull users information from table based off of UID to add to fields on webpage
     cursor.execute("SELECT uid, username, firstname, lastname, email, phone, address, role, manager, company_name FROM employees WHERE uid=%s", (user_id,))
     user = cursor.fetchone()
     cursor.close()
     conn.close()
 
+    #404 error if the user get pulled up by UID, should probably make this redirect back to previous page with pop-up warning about no results
     if user is None:
         return "User not found", 404
+    
+    #Pull up profile picture from storage for the user
     profile_picture_path = os.path.join('static', f'profile_pictures/{user_id}profilepicture.jpg')
     profile_picture_exists = os.path.exists(profile_picture_path)
 
     return render_template('profile.html', user=user,profile_picture_exists=profile_picture_exists)
 
+#Responsible for making a profile editable through the text boxes on the profile page
 @app.route('/profile/<int:user_id>/update', methods=['POST'])
 def update_profile(user_id):
+    #pull previous values from text boxes so we can update anything that changes
     firstname = request.form['firstname']
     lastname = request.form['lastname']
     email = request.form['email']
@@ -207,6 +219,8 @@ def update_profile(user_id):
 
     conn = getConnection()
     cursor = conn.cursor()
+    #because we got the form values from before any changes were made we just overwrite everything with the new data and anything that was unchanged stays the same value
+    #should probably add some checks to entries in the form before pushing this
     cursor.execute("""
         UPDATE employees SET
             firstname=%s, lastname=%s, email=%s, phone=%s, address=%s, role=%s, manager=%s, company_name=%s
@@ -215,14 +229,13 @@ def update_profile(user_id):
     conn.commit()
     cursor.close()
     conn.close()
-    
-
     return redirect(url_for('profile', user_id=user_id))
 
 
-
+#Create user page
 @app.route('/create_user', methods=['GET', 'POST'])
 def create_user():
+    #If POST then load page and pull values from all fields to add to users profile
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -234,36 +247,44 @@ def create_user():
         role = request.form['role']
         manager = request.form['manager']
         company_name = request.form['company_name']
+        #decides admin or user this would be expanded to have more roles in the future
         permissionLevel = request.form['permission_level']
 
         conn = getConnection()
         cursor = conn.cursor()
+        #create admin user this will give them different permissions in the database
         if permissionLevel == "admin":
+            #0 for permission in database signifies admin, this should be changed to be mroe obvious
             permission = 0
-
+            #insert into table
             cursor.execute("""
             INSERT INTO employees (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name))
+            #commit add to table so that uid gets created
             conn.commit()
+
             cursor.execute("SELECT uid FROM employees WHERE username = %s and password = %s and firstname = %s and lastname = %s ", (username, password, firstname, lastname))
             newUserUID = cursor.fetchone()
             userFullName = firstname + lastname
+            #send to audit_log_query to add the creation statement to the audit log and create their audit log file, the TRUE at the end is to signify that it is a user creation action
             audit_log_query(("INSERT INTO employees (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name)), newUserUID, session["uid"], userFullName, True)
 
 
-        # Insert the new user into the employees table
+            # Insert the new user into the employees table
             audit_log_query(f"CREATE USER '{username}'@'%' IDENTIFIED BY '{password}'", newUserUID, session["uid"], userFullName, False)
-            #cursor.execute(f"CREATE USER '{username}'@'%' IDENTIFIED BY '{password}'")
             audit_log_query(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ump_database.* TO '{username}'@'%'", newUserUID, session["uid"], userFullName, False)
-            #cursor.execute(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ump_database.* TO '{username}'@'%'")
-                    
+        
+        #Create regular user account
         if permissionLevel == "regular_user":
+            #permission of 1 signifies regular user
             permission = 1
+            #add to table
             cursor.execute("""
-            INSERT INTO employees (username, password, firstname, lastname, email, phone, address, role, manager, company_name)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO employees (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name))
+            #commit to table
             conn.commit()
             userFullName = firstname + lastname
             cursor.execute("SELECT uid FROM employees WHERE username = %s and password = %s and firstname = %s and lastname = %s ", (username, password, firstname, lastname))
@@ -271,12 +292,8 @@ def create_user():
             conn.commit()
             audit_log_query(("INSERT INTO employees (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name)), newUserUID, session["uid"], userFullName, True)
             audit_log_query(f"CREATE USER '{username}'@'%' IDENTIFIED BY '{password}'", newUserUID, session["uid"], userFullName,False)
-            #cursor.execute(f"CREATE USER '{username}'@'%' IDENTIFIED BY '{password}'")
-            audit_log_query(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ump_database.* TO '{username}'@'%'", newUserUID, session["uid"], userFullName)
-            #cursor.execute(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ump_database.* TO '{username}'@'%'")
-
-        
-
+            #These permissions are not correct, we have to decide what we want users to have access to
+            audit_log_query(f"GRANT SELECT, INSERT, UPDATE, DELETE ON ump_database.* TO '{username}'@'%'", newUserUID, session["uid"], userFullName, False)
 
         conn.close()
 
@@ -284,32 +301,45 @@ def create_user():
 
     return render_template('create_user.html')
 
+
+#Delete user page
+#Needs update to use audit_log_query to keep track of deletions
 @app.route('/delete/<int:user_id>', methods=['POST'])
 def delete_profile(user_id):
+    #Drop down list to force a select of delete, and force a password re-entry
     confirmation = request.form['confirmationList']
     passwordRentry = request.form['passwordBox']
+    #Check that confirm was selected from drop down
     if confirmation == "confirm":
         conn = getConnection()
         cursor = conn.cursor()
+        #Check password with database stored password 
         cursor.execute("SELECT * from employees WHERE username = %s and password = %s", (session["username"], passwordRentry,))
         authenticated = cursor.fetchone()
+
         if authenticated:
             cursor.execute("SELECT username from employees WHERE uid = %s", (user_id,))
             username = cursor.fetchone()[0]
             uid = get_user_by_id(user_id)
             try:
+                #try deleting the user if it fails return the error
+                #This was critical to make it so we could delete a user who is just in the table and doesn't have a DB account
+                #Would be good to add to audit log for user 
                 cursor.execute("DELETE FROM employees WHERE uid = %s", (user_id,))
                 cursor.execute("DROP USER %s", (username,))
             except Exception as e:
                 print(f"An error occurred while deleting user {username} with ID {user_id}: {e}")
+        #if you get your password wrong you get sent to website homepage, no second chances
+        else:
+            return redirect(url_for('/'))
 
-
-        
     else:
         return redirect(url_for('/'))
 
-
+    #send back to admin portal homepage after deletion complete
     return redirect(url_for('users', user_id=user_id))
+
+#Loads the delete page based off of UID
 @app.route('/delete_profile/<int:user_id>', methods=['GET', 'POST'])
 def render_delete_page(user_id):
     if request.method == 'POST':
@@ -325,10 +355,16 @@ def get_user_by_id(user_id):
     cursor.close()
     return user
 
+
+#This function creates our audit log files and tracks all queries sent to the database that are entered through this function 
+#Needs update to put audit log files in audit log folder, currently just dumping in running dir
 def audit_log_query(query, user_id, modifier_id, userFullName, accountCreation):
-    # Connect to the MySQL database
+    #extract UID from its tuple
     uidNotTuple = user_id[0]
+    #Tracking account creation does not play nice with this functions setup because it names the file based off of UID so the creation function is 
+    #added after it is run, if you submit a query as accountCreation = TRUE it will only add the query to the audit log file it will not run the query
     if accountCreation == True:
+        #opens text file with name scheme UID fullname.txt this should be switched for an encoded filename
         filename = f"{uidNotTuple} {userFullName}.txt"
         with open(filename, 'a') as f:
             f.write(f"Query: {query}\n")
@@ -336,6 +372,7 @@ def audit_log_query(query, user_id, modifier_id, userFullName, accountCreation):
             f.write(f"Modifier ID: {modifier_id}\n")
             f.write("Results: User created\n\n")
         f.close()
+    #For anything not accountCreation
     else:
         conn = getConnection()
         cursor = conn.cursor()
@@ -365,7 +402,7 @@ def audit_log_query(query, user_id, modifier_id, userFullName, accountCreation):
 
 #ASSET CODE STARTS HERE:
 
-
+#modified create_user function
 @app.route('/create_asset', methods=['GET', 'POST'])
 def create_asset():
     if request.method == 'POST':
@@ -384,15 +421,14 @@ def create_asset():
         #If a user has 2 assets with matching names assigned to them this statement will probably break:
         cursor.execute("SELECT assetID FROM assetlist WHERE assetName = %s and assetOwner = %s", (assetName, assetOwner))
         newAssetID = cursor.fetchone()
-        #audit_log_query(("INSERT INTO employees (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (username, password, permission, firstname, lastname, email, phone, address, role, manager, company_name)), newUserUID, session["uid"], userFullName, True)
-
-
+        #Need to setup an audit log for assets as well that is where newAssetID would be used as we would have a similar situation to accountCreation
         conn.close()
 
         return redirect(url_for('assets'))
 
     return render_template('create_asset.html')
 
+#display asset profile not working currently
 @app.route('/assetprofile/<int:asset_id>')
 def assetProfile(asset_id):
     conn = getConnection()
@@ -408,6 +444,12 @@ def assetProfile(asset_id):
 
     return render_template('assetprofile.html', asset_id=asset_id)
 
+#should render the about-us.html page, not working
+@app.route('/about-us', methods=['POST'])
+def aboutus():
+    return render_template('about-us.html')
+
+#update asset information the same way user information is updated, would work if asset profile worked
 @app.route('/assetprofile/<int:asset_id>/update', methods=['POST'])
 def update_asset(asset_id):
     assetName = request.form['asset_name']
@@ -417,6 +459,7 @@ def update_asset(asset_id):
 
     conn = getConnection()
     cursor = conn.cursor()
+    #this should be done in an audit log statement
     cursor.execute("""
         UPDATE employees SET
             assetName=%s, assetCount=%s, location=%s, assetOwner=%s
@@ -428,8 +471,9 @@ def update_asset(asset_id):
 
     return redirect(url_for('assetprofile', asset_id=asset_id))
 
+#need to add a delete asset button to asset profile for this to be used currently not configured to work
 @app.route('/deleteasset', methods=['POST'])
-def delete_asset(assetid):
+def delete_asset(asset_id):
     confirmation = request.form['confirmationList']
     passwordRentry = request.form['passwordBox']
     if confirmation == "confirm":
@@ -438,72 +482,40 @@ def delete_asset(assetid):
         cursor.exectute("SELECT * from employees WHERE username = %s and password = %s", session["username"], passwordRentry)
         authenticated = cursor.fetchone()
         if authenticated:
-            username = cursor.exectute("SELECT username from employees WHERE uid = %s", assetid)
+            username = cursor.exectute("SELECT username from employees WHERE uid = %s", asset_id)
             cursor.execute("DROP %s", username)
-            cursor.execute("DELETE FROM `ump_database`.`employees` WHERE (`uid` = %s)", assetid)
-
-        
+            cursor.execute("DELETE FROM `ump_database`.`employees` WHERE (`uid` = %s)", asset_id)        
     else:
         return redirect(url_for('/'))
 
-
-
-
-
-""" CALENDAR_FILE = 'calendar.json'
-
-def load_calendar():
-    if os.path.exists(CALENDAR_FILE):
-        with open(CALENDAR_FILE, 'r') as f:
-            return json.load(f)
-    return {}
-
-def save_calendar(calendar_data):
-    with open(CALENDAR_FILE, 'w') as f:
-        json.dump(calendar_data, f)
-@app.route('/addevent', methods=['POST'])   
-def add_event(date, event):
-    calendar_data = load_calendar()
-    if date not in calendar_data:
-        calendar_data[date] = []
-    calendar_data[date].append(event)
-    save_calendar(calendar_data)
-
-@app.route('/calendar', methods=['GET', 'POST'])
-def calendar_page():
+#same as above
+@app.route('/delete_asset/<int:asset_id>', methods=['GET', 'POST'])
+def render_asset_delete_page():
     if request.method == 'POST':
-        date = request.form.get('date')
-        event = request.form.get('event')
-        add_event(date, event)
-        return redirect(url_for('calendar_page'))
+        return render_template('delete.html')
+    else:
+        return redirect(url_for('homepage'))
 
-    calendar_data = load_calendar()
-    return render_template('calendar.html', calendar=calendar_data) """
-
-
-
-
-
-
-# Set the upload folder and allowed extensions for uploaded images
-# Set the upload folder and allowed extensions for uploaded images
-
+#setup information for profile pictures to work
 current_directory = os.path.dirname(os.path.abspath(__file__))
-profile_pictures_folder = os.path.join(current_directory, 'profile_pictures')
+profile_pictures_folder = os.path.join('static/', 'profile_pictures')
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
 
 app.config['UPLOAD_FOLDER'] = profile_pictures_folder
 
-# Make sure the folder exists or create it if it doesn't
+# Make sure profile_pictures_folder exists or create it if it doesn't
 if not os.path.exists(profile_pictures_folder):
     os.makedirs(profile_pictures_folder)
 
-# Function to check if the uploaded file has a valid extension
+# check if the uploaded file has a valid extension
 def allowed_file(filename):
+    #extracts the file extension and checks if it is allowed 
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+#upload profile picture function
 @app.route('/upload_picture/<user_id>', methods=['POST'])
 def upload_picture(user_id):
+    #if profile picture doesnt exist
     if 'profile_picture' not in request.files:
         flash('No file part')
         return redirect(request.url)
@@ -516,16 +528,14 @@ def upload_picture(user_id):
     if file and allowed_file(file.filename):
         filename = secure_filename(user_id + 'profilepicture.' + file.filename.rsplit('.', 1)[1].lower())
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        # Add code to update the user's profile picture filename in your database if necessary
+        # Add code to update the user's profile picture filename in our database here if we start storing that info in employees table
         return redirect(url_for('profile', user_id=user_id))
 
     else:
         flash('Invalid file type')
         return redirect(request.url)
     
-
-
-
+#Supporting code for the calendar that doesn't work
 @app.route('/events.json')
 def events_json():
     try:
@@ -534,9 +544,10 @@ def events_json():
     except FileNotFoundError:
         events = []
     return jsonify(events)
-
+#more for the non-functioning calendar
 @app.route('/save_events', methods=['POST'])
 def save_events():
+    #supposed to save created events to events.json
     events = request.get_json()
     with open('events.json', 'w') as f:
         json.dump(events, f)
